@@ -44,7 +44,7 @@ void endian_conv::print_config() const {
 void endian_conv::trace_error() const {
     printf("trace> ");
     for (auto const& it : _err_deq) {
-        printf("%d => ", (int)it);
+        printf("%d => ", static_cast<int>(it));
     }
     printf("<end>\n");
 }
@@ -113,6 +113,7 @@ bool endian_conv::_convert() {
     using namespace indicators;
     uint64_t const full_size = fs::file_size(_cfg.in_path);
     uint64_t remained_size = full_size;
+    uint64_t processed_size = 0;
     assert(remained_size > 0);
 
     ProgressBar bar{
@@ -127,12 +128,15 @@ bool endian_conv::_convert() {
        option::FontStyles{std::vector<FontStyle>{FontStyle::bold}}
     };
 
-    show_console_cursor(false);
-    bar.set_progress(0);
 
     bool result = false;
-
     uint64_t read_unit_size = _cfg.iobuf_size;
+    char bar_msg[256];
+
+    show_console_cursor(false);
+    snprintf(bar_msg, 256, "%" PRIu64 " / %" PRIu64, processed_size, full_size);
+    bar.set_option(option::PostfixText(bar_msg));
+    bar.set_progress(0);
 
     switch (_cfg.type) {
     case conv_unit_type::_8_bit:
@@ -180,8 +184,11 @@ bool endian_conv::_convert() {
             break;
         }
         remained_size -= read_size;
+        processed_size += read_size;
 
+        snprintf(bar_msg, 256, "%" PRIu64 " / %" PRIu64, processed_size, full_size);
         size_t const progress = static_cast<size_t>(static_cast<double>(full_size - remained_size) / static_cast<double>(full_size) * 100.0);
+        bar.set_option(option::PostfixText(bar_msg));
         bar.set_progress(progress);
 
         _ofs.write(_buffer_out, read_size);
@@ -207,10 +214,10 @@ void endian_conv::_error_log(error_code const ec) noexcept {
         _err_deq.push_back(ec);
     }
     catch (std::exception const& ex) {
-        fprintf(stderr, "Failed to write an error log (Error code: %d); Exception detected: %s in file %s:%d\n", (int)ec, ex.what(), __FILE__, __LINE__);
+        fprintf(stderr, "Failed to write an error log (Error code: %d); Exception detected: %s in file %s:%d\n", static_cast<int>(ec), ex.what(), __FILE__, __LINE__);
     }
     catch (...) {
-        fprintf(stderr, "Failed to write an error log (Error code: %d); Exception detected: <Unknown> in file %s:%d\n", (int)ec, __FILE__, __LINE__);
+        fprintf(stderr, "Failed to write an error log (Error code: %d); Exception detected: <Unknown> in file %s:%d\n", static_cast<int>(ec), __FILE__, __LINE__);
     }
 }
 
