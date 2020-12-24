@@ -44,7 +44,7 @@ void endian_conv::print_config() const {
 void endian_conv::trace_error() const {
     printf("trace> ");
     for (auto const& it : _err_deq) {
-        printf("%d => ", it);
+        printf("%d => ", (int)it);
     }
     printf("<end>\n");
 }
@@ -207,10 +207,10 @@ void endian_conv::_error_log(error_code const ec) noexcept {
         _err_deq.push_back(ec);
     }
     catch (std::exception const& ex) {
-        fprintf(stderr, "Failed to write an error log (Error code: %d); Exception detected: %s in file %s:%d\n", ec, ex.what(), __FILE__, __LINE__);
+        fprintf(stderr, "Failed to write an error log (Error code: %d); Exception detected: %s in file %s:%d\n", (int)ec, ex.what(), __FILE__, __LINE__);
     }
     catch (...) {
-        fprintf(stderr, "Failed to write an error log (Error code: %d); Exception detected: <Unknown> in file %s:%d\n", ec, __FILE__, __LINE__);
+        fprintf(stderr, "Failed to write an error log (Error code: %d); Exception detected: <Unknown> in file %s:%d\n", (int)ec, __FILE__, __LINE__);
     }
 }
 
